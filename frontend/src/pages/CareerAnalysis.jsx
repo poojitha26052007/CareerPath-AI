@@ -82,7 +82,7 @@ function CareerAnalysis({ studentData, onContinue }) {
         console.log('Sending student data:', studentData)
 
         const response = await fetch(
-          'http://localhost:5000/api/career/analyze',
+          'https://careerpath-ai-sc8u.onrender.com/api/career/analyze',
           {
             method: 'POST',
             headers: {
