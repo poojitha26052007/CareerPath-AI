@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-function LearningJourney({ onComplete }) {
+function LearningJourney({ onComplete, onBack }) {
   const [completedSkills, setCompletedSkills] = useState([])
 
   const skills = [
@@ -70,7 +70,6 @@ function LearningJourney({ onComplete }) {
     },
   ]
 
-  // Mark / unmark skill
   const toggleSkill = (skillId) => {
     setCompletedSkills((previousSkills) => {
       if (previousSkills.includes(skillId)) {
@@ -81,12 +80,10 @@ function LearningJourney({ onComplete }) {
     })
   }
 
-  // Calculate progress
   const progress = Math.round(
     (completedSkills.length / skills.length) * 100
   )
 
-  // Send completed skill names to App.jsx
   const handleResume = () => {
     const completedSkillNames = skills
       .filter((skill) => completedSkills.includes(skill.id))
@@ -96,8 +93,18 @@ function LearningJourney({ onComplete }) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-6 py-10">
+    <div className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6">
+
       <div className="max-w-5xl mx-auto">
+
+        {/* Back Button */}
+        <button
+          type="button"
+          onClick={onBack}
+          className="mb-6 inline-flex items-center gap-2 text-slate-600 hover:text-indigo-600 font-semibold transition"
+        >
+          ← Back to Dashboard
+        </button>
 
         {/* Header */}
         <div className="mb-8">
@@ -106,20 +113,20 @@ function LearningJourney({ onComplete }) {
             Step 3 of 3
           </p>
 
-          <h1 className="text-4xl font-bold text-slate-900">
+          <h1 className="text-4xl sm:text-5xl font-bold text-slate-900">
             Your Learning Journey 📚
           </h1>
 
-          <p className="text-slate-600 mt-2">
+          <p className="text-slate-600 mt-3">
             Learn the recommended skills step by step and track your progress.
           </p>
 
         </div>
 
         {/* Progress Card */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-8">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-8 shadow-sm">
 
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-4">
 
             <div>
               <h2 className="text-xl font-bold text-slate-900">
@@ -137,7 +144,6 @@ function LearningJourney({ onComplete }) {
 
           </div>
 
-          {/* Progress Bar */}
           <div className="w-full h-4 bg-slate-200 rounded-full overflow-hidden">
 
             <div
@@ -151,7 +157,7 @@ function LearningJourney({ onComplete }) {
 
         </div>
 
-        {/* Skills List */}
+        {/* Skills */}
         <div className="space-y-5">
 
           {skills.map((skill, index) => {
@@ -189,7 +195,7 @@ function LearningJourney({ onComplete }) {
 
                   </div>
 
-                  {/* Skill Information */}
+                  {/* Information */}
                   <div className="flex-1">
 
                     <div className="flex flex-wrap items-center gap-3">
@@ -217,23 +223,19 @@ function LearningJourney({ onComplete }) {
                   </div>
 
                   {/* Button */}
-                  <div>
-
-                    <button
-                      type="button"
-                      onClick={() => toggleSkill(skill.id)}
-                      className={`px-5 py-3 rounded-xl font-semibold transition ${
-                        completed
-                          ? 'bg-green-600 text-white hover:bg-green-700'
-                          : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                      }`}
-                    >
-                      {completed
-                        ? '✓ Completed'
-                        : 'Mark as Completed'}
-                    </button>
-
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => toggleSkill(skill.id)}
+                    className={`px-5 py-3 rounded-xl font-semibold transition whitespace-nowrap ${
+                      completed
+                        ? 'bg-green-600 text-white hover:bg-green-700'
+                        : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                    }`}
+                  >
+                    {completed
+                      ? '✓ Completed'
+                      : 'Mark as Completed'}
+                  </button>
 
                 </div>
 
@@ -243,7 +245,7 @@ function LearningJourney({ onComplete }) {
 
         </div>
 
-        {/* All Completed */}
+        {/* Congratulations */}
         {progress === 100 && (
           <div className="mt-8 bg-green-50 border border-green-200 rounded-2xl p-8 text-center">
 
@@ -270,7 +272,13 @@ function LearningJourney({ onComplete }) {
           </div>
         )}
 
+        {/* Footer */}
+        <footer className="text-center text-slate-500 text-sm mt-10">
+          © 2026 CareerPath AI • Learn • Build • Grow 🚀
+        </footer>
+
       </div>
+
     </div>
   )
 }

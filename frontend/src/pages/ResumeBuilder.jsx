@@ -1,586 +1,574 @@
 import { useState } from 'react'
 
-function ResumeBuilder({ studentData, completedSkills = [] }) {
-  const [generated, setGenerated] = useState(false)
-
-  const name = studentData?.name || 'Student'
-  const branch = studentData?.branch || 'Not specified'
-  const year = studentData?.year || 'Not specified'
-  const cgpa = studentData?.cgpa || 'Not specified'
-  const interest = studentData?.interests || 'technology'
-
-  const generatedSummary =
-    `Motivated student pursuing ${branch} in Year ${year}, with an interest in ${interest}. ` +
-    `Currently developing technical skills through hands-on learning and project development, ` +
-    `with a strong interest in building real-world technology solutions and becoming industry ready.`
+function ResumeBuilder({ studentData, completedSkills }) {
+  const [resumeGenerated, setResumeGenerated] = useState(false)
 
   const [resumeData, setResumeData] = useState({
     email: '',
     phone: '',
-    location: '',
-    college: 'Vignan University',
-    summary: '',
-    projects:
-      'CareerPath AI – AI-powered student career guidance platform that analyzes student profiles, identifies skill gaps, recommends suitable career paths, provides a personalized learning roadmap, tracks skill completion, and helps students build professional resumes.',
-    achievements: '',
+    location: 'Guntur, Andhra Pradesh',
+    certifications: '',
     github: '',
     linkedin: '',
   })
 
-  const handleChange = (e) => {
-    const { name, value } = e.target
-
-    setResumeData((prev) => ({
-      ...prev,
-      [name]: value,
+  const updateField = (field, value) => {
+    setResumeData((previous) => ({
+      ...previous,
+      [field]: value,
     }))
   }
 
-  const handleGenerate = (e) => {
-    e.preventDefault()
-    setGenerated(true)
+  const generateResume = () => {
+    setResumeGenerated(true)
+
+    setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      })
+    }, 100)
   }
 
-  const handlePrint = () => {
+  const printResume = () => {
     window.print()
   }
 
-  if (generated) {
-    return (
-      <div className="min-h-screen bg-slate-100 px-6 py-10">
-        <div className="max-w-4xl mx-auto">
+  const branch = studentData?.branch || 'AIML'
+  const year = studentData?.year || '2'
+  const cgpa = studentData?.cgpa || '8.42'
+  const name = studentData?.name || 'Student'
+  const interest = studentData?.interests || 'Artificial Intelligence'
 
-          {/* Success Header */}
-          <div className="text-center mb-8 no-print">
-            <div className="text-5xl mb-3">✓</div>
+  const professionalSummary = `Motivated ${branch} student pursuing Year ${year}, with a strong interest in Artificial Intelligence and Machine Learning. Currently developing technical skills through hands-on learning and project development, with a passion for building real-world technology solutions and becoming industry ready.`
 
-            <h1 className="text-3xl font-bold text-green-700">
-              Resume Generated
-            </h1>
+  const projectDescription =
+    'CareerPath AI is an AI-powered student career guidance platform that analyzes student profiles, identifies skill gaps, recommends suitable career paths, provides a personalized learning roadmap, tracks skill completion, and helps students build professional resumes.'
 
-            <p className="text-slate-600 mt-2">
-              Your CareerPath AI resume is ready.
-            </p>
-          </div>
+  return (
+    <div className="min-h-screen bg-slate-50 px-4 py-8 md:px-6">
 
-          {/* Resume */}
-          <div
-            id="resume"
-            className="bg-white shadow-xl rounded-xl p-10 md:p-12 text-slate-900"
-          >
+      <div className="max-w-5xl mx-auto">
 
+        {!resumeGenerated ? (
+          <>
             {/* Header */}
-            <div className="text-center border-b border-slate-300 pb-6">
+            <div className="mb-8">
+              <button
+                type="button"
+                onClick={() => window.history.back()}
+                className="mb-5 text-indigo-600 font-semibold hover:text-indigo-800"
+              >
+                ← Back to Dashboard
+              </button>
 
-              <h1 className="text-4xl font-bold uppercase tracking-wide">
-                {name}
-              </h1>
+              <div className="text-center">
+                <div className="text-5xl mb-3">🎉</div>
 
-              <p className="text-slate-600 mt-2">
-                {resumeData.email || 'Email not provided'}
-                {' | '}
-                {resumeData.phone || 'Phone not provided'}
-                {' | '}
-                {resumeData.location || 'Location not provided'}
-              </p>
+                <h1 className="text-4xl font-bold text-slate-900">
+                  Career Ready
+                </h1>
 
-              {(resumeData.github || resumeData.linkedin) && (
-                <div className="flex justify-center flex-wrap gap-4 mt-3 text-sm">
+                <p className="text-slate-600 mt-2 text-lg">
+                  Build Your Resume 📄
+                </p>
 
-                  {resumeData.github && (
-                    <span>
-                      GitHub: {resumeData.github}
-                    </span>
-                  )}
-
-                  {resumeData.linkedin && (
-                    <span>
-                      LinkedIn: {resumeData.linkedin}
-                    </span>
-                  )}
-
-                </div>
-              )}
-
+                <p className="text-slate-500 mt-1">
+                  Create a professional resume using the skills you developed
+                  through CareerPath AI.
+                </p>
+              </div>
             </div>
 
-            {/* Professional Summary */}
-            <section className="mt-7">
+            {/* Personal Information */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 shadow-sm">
 
-              <h2 className="text-lg font-bold border-b border-slate-300 pb-2">
-                PROFESSIONAL SUMMARY
+              <h2 className="text-2xl font-bold text-slate-900 mb-5">
+                👤 Personal Information
               </h2>
 
-              <p className="mt-3 text-slate-700 leading-7">
-                {resumeData.summary || generatedSummary}
-              </p>
+              <div className="grid md:grid-cols-2 gap-5">
 
-            </section>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Full Name
+                  </label>
 
-            {/* Education */}
-            <section className="mt-7">
+                  <input
+                    type="text"
+                    value={name}
+                    readOnly
+                    className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-100 text-slate-700"
+                  />
+                </div>
 
-              <h2 className="text-lg font-bold border-b border-slate-300 pb-2">
-                EDUCATION
-              </h2>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Email
+                  </label>
 
-              <div className="mt-3">
+                  <input
+                    type="email"
+                    placeholder="yourname@gmail.com"
+                    value={resumeData.email}
+                    onChange={(e) =>
+                      updateField('email', e.target.value)
+                    }
+                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
 
-                <p className="font-bold text-lg">
-                  {resumeData.college || 'College / University'}
-                </p>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Phone
+                  </label>
 
-                <p className="mt-1">
-                  {branch}
-                </p>
+                  <input
+                    type="tel"
+                    placeholder="+91 XXXXX XXXXX"
+                    value={resumeData.phone}
+                    onChange={(e) =>
+                      updateField('phone', e.target.value)
+                    }
+                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
 
-                <p className="mt-1 text-slate-700">
-                  Year: {year} | CGPA: {cgpa}
-                </p>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Location
+                  </label>
+
+                  <input
+                    type="text"
+                    value={resumeData.location}
+                    onChange={(e) =>
+                      updateField('location', e.target.value)
+                    }
+                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
 
               </div>
+            </div>
 
-            </section>
+            {/* Education */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 shadow-sm">
 
-            {/* Technical Skills */}
-            <section className="mt-7">
-
-              <h2 className="text-lg font-bold border-b border-slate-300 pb-2">
-                TECHNICAL SKILLS
+              <h2 className="text-2xl font-bold text-slate-900 mb-5">
+                🎓 Education
               </h2>
 
-              <div className="mt-3 grid grid-cols-2 md:grid-cols-3 gap-2">
+              <div className="grid md:grid-cols-2 gap-5">
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    College / University
+                  </label>
+
+                  <input
+                    type="text"
+                    value="Vignan University"
+                    readOnly
+                    className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-100"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Branch
+                  </label>
+
+                  <input
+                    type="text"
+                    value={branch}
+                    readOnly
+                    className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-100"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Current Year
+                  </label>
+
+                  <input
+                    type="text"
+                    value={year}
+                    readOnly
+                    className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-100"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    CGPA
+                  </label>
+
+                  <input
+                    type="text"
+                    value={cgpa}
+                    readOnly
+                    className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-100"
+                  />
+                </div>
+
+              </div>
+            </div>
+
+            {/* Completed Skills */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 shadow-sm">
+
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                🛠️ Your Completed Skills
+              </h2>
+
+              <p className="text-slate-500 mb-5">
+                These skills were completed through your CareerPath AI
+                learning journey.
+              </p>
+
+              <div className="grid md:grid-cols-2 gap-3">
 
                 {completedSkills.length > 0 ? (
                   completedSkills.map((skill) => (
-                    <p key={skill} className="text-slate-700">
-                      • {skill}
-                    </p>
+                    <div
+                      key={skill}
+                      className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-xl"
+                    >
+                      <span className="text-green-600 font-bold">
+                        ✓
+                      </span>
+
+                      <span className="font-semibold text-slate-800">
+                        {skill}
+                      </span>
+                    </div>
                   ))
                 ) : (
                   <p className="text-slate-500">
-                    No skills added
+                    No completed skills yet.
                   </p>
                 )}
 
               </div>
+            </div>
 
-            </section>
+            {/* Professional Summary */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 shadow-sm">
 
-            {/* Projects */}
-            <section className="mt-7">
-
-              <h2 className="text-lg font-bold border-b border-slate-300 pb-2">
-                PROJECTS
+              <h2 className="text-2xl font-bold text-slate-900 mb-4">
+                📝 Professional Summary
               </h2>
 
-              <div className="mt-3">
+              <p className="text-slate-700 leading-7 bg-slate-50 rounded-xl p-5">
+                {professionalSummary}
+              </p>
 
-                <p className="font-bold">
+              <p className="text-sm text-indigo-600 mt-3">
+                ✨ CareerPath AI generated this summary based on your
+                profile.
+              </p>
+
+            </div>
+
+            {/* Projects */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 shadow-sm">
+
+              <h2 className="text-2xl font-bold text-slate-900 mb-5">
+                🚀 Projects
+              </h2>
+
+              <div className="border border-indigo-200 bg-indigo-50 rounded-xl p-5">
+
+                <h3 className="text-xl font-bold text-indigo-900">
                   CareerPath AI
-                </p>
+                </h3>
 
-                <p className="text-slate-700 mt-1 leading-7">
-                  {resumeData.projects}
+                <p className="text-slate-700 mt-3 leading-7">
+                  {projectDescription}
                 </p>
 
               </div>
 
-            </section>
+            </div>
 
-            {/* Achievements */}
-            {resumeData.achievements.trim() && (
+            {/* Certifications */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 shadow-sm">
+
+              <h2 className="text-2xl font-bold text-slate-900 mb-4">
+                🏆 Certifications & Achievements
+              </h2>
+
+              <textarea
+                rows="4"
+                placeholder="Example: AI Workshop, Hackathon 2026, Python Certification..."
+                value={resumeData.certifications}
+                onChange={(e) =>
+                  updateField('certifications', e.target.value)
+                }
+                className="w-full px-4 py-3 rounded-xl border border-slate-300 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+
+            </div>
+
+            {/* Professional Links */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 shadow-sm">
+
+              <h2 className="text-2xl font-bold text-slate-900 mb-5">
+                🔗 Professional Links
+              </h2>
+
+              <div className="grid md:grid-cols-2 gap-5">
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    GitHub
+                  </label>
+
+                  <input
+                    type="url"
+                    placeholder="https://github.com/yourusername"
+                    value={resumeData.github}
+                    onChange={(e) =>
+                      updateField('github', e.target.value)
+                    }
+                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    LinkedIn
+                  </label>
+
+                  <input
+                    type="url"
+                    placeholder="https://linkedin.com/in/yourusername"
+                    value={resumeData.linkedin}
+                    onChange={(e) =>
+                      updateField('linkedin', e.target.value)
+                    }
+                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+              </div>
+            </div>
+
+            {/* Generate */}
+            <div className="text-center pb-10">
+
+              <button
+                type="button"
+                onClick={generateResume}
+                className="px-10 py-4 rounded-xl bg-indigo-600 text-white font-bold text-lg hover:bg-indigo-700 transition shadow-lg"
+              >
+                Generate My Resume →
+              </button>
+
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Generated Resume */}
+            <div className="flex justify-between items-center mb-6 print:hidden">
+
+              <button
+                type="button"
+                onClick={() => setResumeGenerated(false)}
+                className="text-indigo-600 font-semibold hover:text-indigo-800"
+              >
+                ← Edit Resume
+              </button>
+
+              <button
+                type="button"
+                onClick={printResume}
+                className="px-5 py-3 bg-slate-900 text-white rounded-xl font-semibold hover:bg-slate-800"
+              >
+                🖨️ Print / Save as PDF
+              </button>
+
+            </div>
+
+            <div
+              id="resume"
+              className="bg-white rounded-none md:rounded-2xl shadow-lg border border-slate-200 p-8 md:p-12 print:shadow-none print:border-none"
+            >
+
+              {/* Name */}
+              <div className="text-center border-b border-slate-300 pb-6">
+
+                <h1 className="text-4xl font-bold text-slate-900">
+                  {name}
+                </h1>
+
+                <div className="flex flex-wrap justify-center gap-2 text-slate-600 mt-3">
+
+                  {resumeData.email && (
+                    <span>{resumeData.email}</span>
+                  )}
+
+                  {resumeData.phone && (
+                    <>
+                      <span>•</span>
+                      <span>{resumeData.phone}</span>
+                    </>
+                  )}
+
+                  {resumeData.location && (
+                    <>
+                      <span>•</span>
+                      <span>{resumeData.location}</span>
+                    </>
+                  )}
+
+                </div>
+
+                {(resumeData.github || resumeData.linkedin) && (
+                  <div className="flex flex-wrap justify-center gap-4 mt-3 text-sm">
+
+                    {resumeData.github && (
+                      <span className="text-indigo-600">
+                        GitHub: {resumeData.github}
+                      </span>
+                    )}
+
+                    {resumeData.linkedin && (
+                      <span className="text-indigo-600">
+                        LinkedIn: {resumeData.linkedin}
+                      </span>
+                    )}
+
+                  </div>
+                )}
+
+              </div>
+
+              {/* Summary */}
               <section className="mt-7">
 
-                <h2 className="text-lg font-bold border-b border-slate-300 pb-2">
-                  CERTIFICATIONS & ACHIEVEMENTS
+                <h2 className="text-xl font-bold text-slate-900 border-b border-slate-300 pb-2">
+                  PROFESSIONAL SUMMARY
                 </h2>
 
-                <p className="mt-3 text-slate-700 whitespace-pre-line">
-                  {resumeData.achievements}
+                <p className="text-slate-700 leading-7 mt-3">
+                  {professionalSummary}
                 </p>
 
               </section>
-            )}
 
-          </div>
+              {/* Education */}
+              <section className="mt-7">
 
-          {/* Buttons */}
-          <div className="flex justify-center gap-4 mt-8 no-print">
+                <h2 className="text-xl font-bold text-slate-900 border-b border-slate-300 pb-2">
+                  EDUCATION
+                </h2>
 
-            <button
-              onClick={() => setGenerated(false)}
-              className="px-6 py-3 rounded-xl bg-slate-700 text-white font-semibold hover:bg-slate-800 transition"
-            >
-              ← Edit Resume
-            </button>
+                <div className="mt-3">
 
-            <button
-              onClick={handlePrint}
-              className="px-6 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition"
-            >
-              🖨️ Print / Save as PDF
-            </button>
+                  <h3 className="font-bold text-slate-900">
+                    Vignan University
+                  </h3>
 
-          </div>
+                  <p className="text-slate-700">
+                    {branch}
+                  </p>
 
-          {/* Print CSS */}
-          <style>
-            {`
-              @media print {
-                body {
-                  background: white !important;
-                }
+                  <p className="text-slate-600">
+                    Year: {year} | CGPA: {cgpa}
+                  </p>
 
-                .no-print {
-                  display: none !important;
-                }
+                </div>
 
-                #resume {
-                  box-shadow: none !important;
-                  border-radius: 0 !important;
-                  margin: 0 !important;
-                  padding: 30px !important;
-                }
-              }
-            `}
-          </style>
+              </section>
 
-        </div>
-      </div>
-    )
-  }
+              {/* Skills */}
+              <section className="mt-7">
 
-  return (
-    <div className="min-h-screen bg-slate-50 px-6 py-10">
-      <div className="max-w-4xl mx-auto">
+                <h2 className="text-xl font-bold text-slate-900 border-b border-slate-300 pb-2">
+                  TECHNICAL SKILLS
+                </h2>
 
-        {/* Header */}
-        <div className="mb-8">
+                <div className="grid md:grid-cols-2 gap-2 mt-3">
 
-          <p className="text-green-600 font-semibold mb-2">
-            🎉 Career Ready
-          </p>
+                  {completedSkills.map((skill) => (
+                    <div
+                      key={skill}
+                      className="text-slate-700"
+                    >
+                      • {skill}
+                    </div>
+                  ))}
 
-          <h1 className="text-4xl font-bold text-slate-900">
-            Build Your Resume 📄
-          </h1>
+                </div>
 
-          <p className="text-slate-600 mt-2">
-            Create a professional resume using the skills you developed
-            through CareerPath AI.
-          </p>
+              </section>
 
-        </div>
+              {/* Projects */}
+              <section className="mt-7">
 
-        <form
-          onSubmit={handleGenerate}
-          className="space-y-6"
-        >
+                <h2 className="text-xl font-bold text-slate-900 border-b border-slate-300 pb-2">
+                  PROJECTS
+                </h2>
 
-          {/* Personal Information */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6">
+                <div className="mt-3">
 
-            <h2 className="text-xl font-bold text-slate-900 mb-5">
-              👤 Personal Information
-            </h2>
+                  <h3 className="font-bold text-slate-900">
+                    CareerPath AI
+                  </h3>
 
-            <div className="grid md:grid-cols-2 gap-5">
+                  <p className="text-slate-700 leading-7 mt-1">
+                    {projectDescription}
+                  </p>
 
-              {/* Name */}
-              <div>
-                <label className="block font-semibold mb-2">
-                  Full Name
-                </label>
+                </div>
 
-                <input
-                  value={name}
-                  readOnly
-                  className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50"
-                />
-              </div>
+              </section>
 
-              {/* Email */}
-              <div>
-                <label className="block font-semibold mb-2">
-                  Email
-                </label>
+              {/* Certifications */}
+              {resumeData.certifications.trim() && (
+                <section className="mt-7">
 
-                <input
-                  name="email"
-                  value={resumeData.email}
-                  onChange={handleChange}
-                  type="email"
-                  placeholder="you@example.com"
-                  required
-                  className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
+                  <h2 className="text-xl font-bold text-slate-900 border-b border-slate-300 pb-2">
+                    CERTIFICATIONS & ACHIEVEMENTS
+                  </h2>
 
-              {/* Phone */}
-              <div>
-                <label className="block font-semibold mb-2">
-                  Phone
-                </label>
+                  <p className="text-slate-700 whitespace-pre-line mt-3">
+                    {resumeData.certifications}
+                  </p>
 
-                <input
-                  name="phone"
-                  value={resumeData.phone}
-                  onChange={handleChange}
-                  type="tel"
-                  placeholder="+91 9876543210"
-                  required
-                  className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              {/* Location */}
-              <div>
-                <label className="block font-semibold mb-2">
-                  Location
-                </label>
-
-                <input
-                  name="location"
-                  value={resumeData.location}
-                  onChange={handleChange}
-                  placeholder="Guntur, Andhra Pradesh"
-                  required
-                  className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
+                </section>
+              )}
 
             </div>
-          </div>
-
-          {/* Education */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6">
-
-            <h2 className="text-xl font-bold text-slate-900 mb-5">
-              🎓 Education
-            </h2>
-
-            <div className="grid md:grid-cols-2 gap-5">
-
-              {/* College */}
-              <div>
-                <label className="block font-semibold mb-2">
-                  College / University
-                </label>
-
-                <input
-                  name="college"
-                  value={resumeData.college}
-                  onChange={handleChange}
-                  placeholder="Your college name"
-                  required
-                  className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              {/* Branch */}
-              <div>
-                <label className="block font-semibold mb-2">
-                  Branch
-                </label>
-
-                <input
-                  value={branch}
-                  readOnly
-                  className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50"
-                />
-              </div>
-
-              {/* Year */}
-              <div>
-                <label className="block font-semibold mb-2">
-                  Current Year
-                </label>
-
-                <input
-                  value={year}
-                  readOnly
-                  className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50"
-                />
-              </div>
-
-              {/* CGPA */}
-              <div>
-                <label className="block font-semibold mb-2">
-                  CGPA
-                </label>
-
-                <input
-                  value={cgpa}
-                  readOnly
-                  className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50"
-                />
-              </div>
-
-            </div>
-          </div>
-
-          {/* Completed Skills */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6">
-
-            <h2 className="text-xl font-bold text-slate-900 mb-4">
-              🛠️ Your Completed Skills
-            </h2>
-
-            <p className="text-slate-600 mb-4">
-              These skills were completed through your CareerPath AI
-              learning journey.
-            </p>
-
-            {completedSkills.length > 0 ? (
-              <div className="grid md:grid-cols-2 gap-3">
-
-                {completedSkills.map((skill) => (
-                  <div
-                    key={skill}
-                    className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-4 py-3"
-                  >
-                    <span className="text-green-600 font-bold">
-                      ✓
-                    </span>
-
-                    <span className="font-semibold text-slate-800">
-                      {skill}
-                    </span>
-                  </div>
-                ))}
-
-              </div>
-            ) : (
-              <p className="text-slate-500">
-                No completed skills yet.
-              </p>
-            )}
-
-          </div>
-
-          {/* Professional Summary */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6">
-
-            <h2 className="text-xl font-bold text-slate-900 mb-4">
-              📝 Professional Summary
-            </h2>
-
-            <textarea
-              name="summary"
-              value={resumeData.summary}
-              onChange={handleChange}
-              placeholder={generatedSummary}
-              rows="6"
-              className="w-full px-4 py-3 rounded-xl border border-slate-300 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-
-            <p className="text-sm text-indigo-600 mt-2">
-              ✨ CareerPath AI generated this summary based on your profile.
-              You can edit it if needed.
-            </p>
-
-          </div>
-
-          {/* Projects */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6">
-
-            <h2 className="text-xl font-bold text-slate-900 mb-4">
-              🚀 Projects
-            </h2>
-
-            <textarea
-              name="projects"
-              value={resumeData.projects}
-              onChange={handleChange}
-              rows="6"
-              className="w-full px-4 py-3 rounded-xl border border-slate-300 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-
-            <p className="text-sm text-indigo-600 mt-2">
-              ✨ CareerPath AI project is automatically added.
-            </p>
-
-          </div>
-
-          {/* Certifications */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6">
-
-            <h2 className="text-xl font-bold text-slate-900 mb-4">
-              🏆 Certifications & Achievements
-            </h2>
-
-            <textarea
-              name="achievements"
-              value={resumeData.achievements}
-              onChange={handleChange}
-              placeholder="Add certifications, hackathons, awards, workshops, etc."
-              rows="5"
-              className="w-full px-4 py-3 rounded-xl border border-slate-300 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-
-          </div>
-
-          {/* Professional Links */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6">
-
-            <h2 className="text-xl font-bold text-slate-900 mb-5">
-              🔗 Professional Links
-            </h2>
-
-            <div className="space-y-5">
-
-              {/* GitHub */}
-              <div>
-                <label className="block font-semibold mb-2">
-                  GitHub
-                </label>
-
-                <input
-                  name="github"
-                  value={resumeData.github}
-                  onChange={handleChange}
-                  type="url"
-                  placeholder="https://github.com/username"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              {/* LinkedIn */}
-              <div>
-                <label className="block font-semibold mb-2">
-                  LinkedIn
-                </label>
-
-                <input
-                  name="linkedin"
-                  value={resumeData.linkedin}
-                  onChange={handleChange}
-                  type="url"
-                  placeholder="https://linkedin.com/in/username"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-            </div>
-
-          </div>
-
-          {/* Generate Resume */}
-          <div className="text-center pb-10">
-
-            <button
-              type="submit"
-              className="px-10 py-4 rounded-xl bg-indigo-600 text-white font-semibold text-lg hover:bg-indigo-700 transition shadow-lg"
-            >
-              Generate My Resume →
-            </button>
-
-          </div>
-
-        </form>
+          </>
+        )}
 
       </div>
+
+      {/* Print CSS */}
+      <style>
+        {`
+          @media print {
+            body {
+              background: white !important;
+            }
+
+            #resume {
+              width: 100%;
+              margin: 0;
+              padding: 20px;
+            }
+
+            .print\\:hidden {
+              display: none !important;
+            }
+          }
+        `}
+      </style>
+
     </div>
   )
 }
