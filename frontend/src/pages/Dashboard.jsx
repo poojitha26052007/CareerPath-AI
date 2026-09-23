@@ -41,10 +41,23 @@ function Dashboard({
   const cgpa =
     studentData?.cgpa || 'N/A'
 
-  const interest =
-    studentData?.interests ||
-    studentData?.interest ||
+  // =========================
+  // SAFE INTEREST HANDLING
+  // =========================
+
+  const rawInterest =
+    studentData?.interests ??
+    studentData?.interest ??
     'Technology'
+
+  // Convert array -> string
+  // Convert anything else -> string
+  const interest = Array.isArray(rawInterest)
+    ? rawInterest
+      .map((item) => String(item ?? ''))
+      .filter(Boolean)
+      .join(', ')
+    : String(rawInterest ?? 'Technology')
 
   // =========================
   // PRIMARY CAREER
@@ -74,11 +87,21 @@ function Dashboard({
     primaryCareer.title
 
   const matchPercentage =
-    primaryCareer.matchPercentage
+    primaryCareer.matchPercentage ?? 0
 
   const roadmapSkills =
-    (primaryCareer.roadmap || [])
-      .map((item) => item.name)
+    (Array.isArray(primaryCareer.roadmap)
+      ? primaryCareer.roadmap
+      : []
+    )
+      .map((item) => {
+        if (typeof item === 'string') {
+          return item
+        }
+
+        return item?.name || ''
+      })
+      .filter(Boolean)
 
   const totalSkills =
     roadmapSkills.length > 0
@@ -112,12 +135,15 @@ function Dashboard({
   // LEARNING PROGRESS
   // =========================
 
-  const progress = Math.min(
-    100,
-    Math.round(
-      (completedCount / totalSkills) * 100
-    )
-  )
+  const progress =
+    totalSkills > 0
+      ? Math.min(
+        100,
+        Math.round(
+          (completedCount / totalSkills) * 100
+        )
+      )
+      : 0
 
   const currentLearning =
     roadmapSkills.find(
@@ -130,6 +156,28 @@ function Dashboard({
     'Capstone Project'
 
   // =========================
+  // SAFE STRING HELPER
+  // =========================
+
+  const safeLower = (value) => {
+    if (Array.isArray(value)) {
+      return value
+        .map((item) => String(item ?? ''))
+        .join(' ')
+        .toLowerCase()
+    }
+
+    if (
+      value !== null &&
+      typeof value === 'object'
+    ) {
+      return String(value).toLowerCase()
+    }
+
+    return String(value ?? '').toLowerCase()
+  }
+
+  // =========================
   // FORMAT HELPERS
   // =========================
 
@@ -137,8 +185,7 @@ function Dashboard({
     if (
       value ===
       'Computer Science & Engineering' ||
-      value ===
-      'Computer Science'
+      value === 'Computer Science'
     ) {
       return 'CSE'
     }
@@ -151,8 +198,20 @@ function Dashboard({
       return 'Technology'
     }
 
-    let str =
-      String(value).trim()
+    // IMPORTANT:
+    // Handle array safely before String processing
+    let str = Array.isArray(value)
+      ? value
+        .map((item) => String(item ?? ''))
+        .filter(Boolean)
+        .join(', ')
+      : String(value)
+
+    str = str.trim()
+
+    if (!str) {
+      return 'Technology'
+    }
 
     // Handle doubled strings
     if (
@@ -205,11 +264,15 @@ function Dashboard({
       const formatted =
         part.replace(
           /\b\w/g,
-          (c) => c.toUpperCase()
+          (c) =>
+            c.toUpperCase()
         )
 
+      // SAFE:
+      // Never directly call .toLowerCase()
+      // on a possible array
       const lower =
-        formatted.toLowerCase()
+        safeLower(formatted)
 
       if (!seen.has(lower)) {
         seen.add(lower)
@@ -240,7 +303,6 @@ function Dashboard({
       ========================= */}
 
       <header className="bg-white border-b border-slate-200">
-
         <div className="max-w-6xl mx-auto px-5 py-5 flex items-center justify-between">
 
           <div>
@@ -266,8 +328,9 @@ function Dashboard({
             )}
 
             <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center font-bold text-indigo-700">
-              {name
+              {String(name)
                 .split(' ')
+                .filter(Boolean)
                 .map(
                   (word) =>
                     word[0]
@@ -280,7 +343,6 @@ function Dashboard({
           </div>
 
         </div>
-
       </header>
 
       <main className="max-w-6xl mx-auto px-5 py-8">
@@ -371,7 +433,6 @@ function Dashboard({
                 Career Match
               </div>
 
-              {/* NAVIGATION */}
               <button
                 type="button"
                 onClick={onCareerAnalysis}
@@ -574,7 +635,6 @@ function Dashboard({
 
             </div>
 
-            {/* NAVIGATION */}
             <button
               type="button"
               onClick={onLearningJourney}
@@ -619,7 +679,6 @@ function Dashboard({
 
               </div>
 
-              {/* NAVIGATION */}
               <button
                 type="button"
                 onClick={onCareerAnalysis}
@@ -650,7 +709,6 @@ function Dashboard({
 
               </div>
 
-              {/* NAVIGATION */}
               <button
                 type="button"
                 onClick={onLearningJourney}
@@ -681,7 +739,6 @@ function Dashboard({
 
               </div>
 
-              {/* NAVIGATION */}
               <button
                 type="button"
                 onClick={onResume}
@@ -721,10 +778,9 @@ function Dashboard({
                 </h3>
 
                 <p className="text-sm text-slate-600 mt-2">
-                  You have completed all 8 recommended skills for {careerGoal}. Your achievements have been populated into your professional resume.
+                  You have completed all {totalSkills} recommended skills for {careerGoal}. Your achievements have been populated into your professional resume.
                 </p>
 
-                {/* NAVIGATION */}
                 <button
                   type="button"
                   onClick={onResume}
@@ -763,7 +819,6 @@ function Dashboard({
                   Complete remaining skills in your learning journey to unlock 100% Career Readiness and build an optimized resume.
                 </p>
 
-                {/* NAVIGATION */}
                 <button
                   type="button"
                   onClick={onLearningJourney}
@@ -807,7 +862,6 @@ function Dashboard({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
             <div>
-
               <p className="text-sm text-slate-500">
                 Full Name
               </p>
@@ -815,11 +869,9 @@ function Dashboard({
               <p className="font-semibold mt-1">
                 {name}
               </p>
-
             </div>
 
             <div>
-
               <p className="text-sm text-slate-500">
                 Branch
               </p>
@@ -827,11 +879,9 @@ function Dashboard({
               <p className="font-semibold mt-1">
                 {formatBranch(branch)}
               </p>
-
             </div>
 
             <div>
-
               <p className="text-sm text-slate-500">
                 Year
               </p>
@@ -839,11 +889,9 @@ function Dashboard({
               <p className="font-semibold mt-1">
                 {year}
               </p>
-
             </div>
 
             <div>
-
               <p className="text-sm text-slate-500">
                 Interest
               </p>
@@ -851,11 +899,9 @@ function Dashboard({
               <p className="font-semibold mt-1">
                 {formatInterest(interest)}
               </p>
-
             </div>
 
             <div>
-
               <p className="text-sm text-slate-500">
                 CGPA
               </p>
@@ -863,11 +909,9 @@ function Dashboard({
               <p className="font-semibold mt-1">
                 {cgpa}
               </p>
-
             </div>
 
             <div>
-
               <p className="text-sm text-slate-500">
                 Selected Goal
               </p>
@@ -875,7 +919,6 @@ function Dashboard({
               <p className="font-semibold mt-1 text-indigo-600">
                 {careerGoal}
               </p>
-
             </div>
 
           </div>
