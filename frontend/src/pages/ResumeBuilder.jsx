@@ -1,47 +1,61 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
-function ResumeBuilder({ studentData, completedSkills = [] }) {
-  const [email, setEmail] = useState('yourname@gmail.com')
-  const [phone, setPhone] = useState('+91 XXXXX XXXXX')
+function ResumeBuilder({
+  studentData = {},
+  completedSkills = [],
+  careerEvaluation = null,
+  onBack,
+}) {
+  const primary = careerEvaluation?.primary || {
+    title: studentData?.careerGoal || 'Software Developer',
+    requiredSkills: [],
+    roadmap: [],
+  }
+
+  const name = studentData?.name || 'Student Name'
+  const branch = studentData?.branch || 'CSE'
+  const year = studentData?.year || '2'
+  const cgpa = studentData?.cgpa || '8.4'
+  const interest = studentData?.interests || studentData?.interest || 'Technology'
+  const careerGoal = primary.title
+
+  // Active skills derived dynamically from completed skills or required career skills
+  const fallbackCareerSkills = useMemo(() => {
+    if (primary.roadmap && primary.roadmap.length > 0) {
+      return primary.roadmap.map((item) => item.name)
+    }
+    return primary.requiredSkills && primary.requiredSkills.length > 0
+      ? primary.requiredSkills
+      : ['Programming Fundamentals', 'Data Structures', 'Git & GitHub', 'SQL']
+  }, [primary])
+
+  const verifiedSkills = useMemo(() => {
+    return fallbackCareerSkills.filter((skill) =>
+      Array.isArray(completedSkills) && completedSkills.includes(skill)
+    )
+  }, [fallbackCareerSkills, completedSkills])
+
+  const skills = verifiedSkills.length > 0 ? verifiedSkills : fallbackCareerSkills
+
+  const [email, setEmail] = useState('student@careerpath.ai')
+  const [phone, setPhone] = useState('+91 98765 43210')
   const [location, setLocation] = useState('Guntur, Andhra Pradesh')
+  const [university, setUniversity] = useState('Vignan University')
 
-  const [summary, setSummary] = useState(
-    'Motivated CSE student pursuing Year 2, with a strong interest in Artificial Intelligence and Machine Learning. Currently developing technical skills through hands-on learning and project development, with a passion for building real-world technology solutions and becoming industry ready.'
-  )
+  const defaultSummary = useMemo(() => {
+    const topSkillsStr = skills.slice(0, 4).join(', ')
+    return `Motivated ${branch} student pursuing Year ${year}, aiming to excel as a professional ${careerGoal}. Currently building practical technical competency in ${topSkillsStr || 'core engineering concepts'} with a proven commitment to project development, problem solving, and industry readiness.`
+  }, [branch, year, careerGoal, skills])
 
+  const [summary, setSummary] = useState(defaultSummary)
   const [certifications, setCertifications] = useState('')
-  const [github, setGithub] = useState(
-    'https://github.com/yourusername'
-  )
-  const [linkedin, setLinkedin] = useState(
-    'https://linkedin.com/in/yourusername'
-  )
+  const [github, setGithub] = useState('https://github.com/yourusername')
+  const [linkedin, setLinkedin] = useState('https://linkedin.com/in/yourusername')
 
   const [generated, setGenerated] = useState(false)
 
-  const skills =
-    completedSkills.length > 0
-      ? completedSkills
-      : [
-          'Python Fundamentals',
-          'SQL',
-          'Git & GitHub',
-          'NumPy',
-          'Pandas',
-          'Statistics',
-          'Machine Learning',
-          'AI Project',
-        ]
-
-  const name = studentData?.name || 'Your Name'
-  const branch = studentData?.branch || 'CSE'
-  const year = studentData?.year || '2'
-  const cgpa = studentData?.cgpa || '8.42'
-  const interest = studentData?.interest || 'Artificial Intelligence'
-
   const handleGenerateResume = () => {
     setGenerated(true)
-
     setTimeout(() => {
       document
         .getElementById('resume-preview')
@@ -60,10 +74,21 @@ function ResumeBuilder({ studentData, completedSkills = [] }) {
     <div className="min-h-screen bg-slate-50 px-4 py-8 md:px-6">
       <div className="max-w-6xl mx-auto">
 
+        {/* Back Button */}
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="mb-6 inline-flex items-center gap-2 text-slate-600 hover:text-indigo-600 font-semibold transition"
+          >
+            ← Back to Dashboard
+          </button>
+        )}
+
         {/* HEADER */}
         <div className="mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-100 text-green-700 font-semibold mb-4">
-            🎉 Career Ready
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-sm mb-4">
+            📄 Industry Ready Resume
           </div>
 
           <h1 className="text-4xl md:text-5xl font-bold text-slate-900">
@@ -71,13 +96,12 @@ function ResumeBuilder({ studentData, completedSkills = [] }) {
           </h1>
 
           <p className="text-slate-600 mt-3 text-lg">
-            Create a professional resume using the skills you developed
-            through CareerPath AI.
+            Create an ATS-friendly professional resume populated with your verified skills and personalized for <span className="font-semibold text-indigo-600">{careerGoal}</span>.
           </p>
         </div>
 
         {/* PERSONAL INFORMATION */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 shadow-sm">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">
             👤 Personal Information
           </h2>
@@ -99,7 +123,7 @@ function ResumeBuilder({ studentData, completedSkills = [] }) {
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Email
+                Email Address
               </label>
 
               <input
@@ -112,7 +136,7 @@ function ResumeBuilder({ studentData, completedSkills = [] }) {
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Phone
+                Phone Number
               </label>
 
               <input
@@ -140,9 +164,9 @@ function ResumeBuilder({ studentData, completedSkills = [] }) {
         </div>
 
         {/* EDUCATION */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 shadow-sm">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">
-            🎓 Education
+            🎓 Education & Academic Profile
           </h2>
 
           <div className="grid md:grid-cols-2 gap-5">
@@ -154,76 +178,83 @@ function ResumeBuilder({ studentData, completedSkills = [] }) {
 
               <input
                 type="text"
-                value="Vignan University"
-                readOnly
-                className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50"
+                value={university}
+                onChange={(e) => setUniversity(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Branch
+                Branch / Discipline
               </label>
 
               <input
                 type="text"
                 value={branch}
                 readOnly
-                className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50"
+                className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50 font-medium"
               />
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Current Year
+                Current Academic Year
               </label>
 
               <input
                 type="text"
-                value={year}
+                value={`Year ${year}`}
                 readOnly
-                className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50"
+                className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50 font-medium"
               />
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                CGPA
+                Cumulative CGPA
               </label>
 
               <input
                 type="text"
-                value={cgpa}
+                value={cgpa || 'N/A'}
                 readOnly
-                className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50"
+                className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50 font-medium"
               />
             </div>
 
           </div>
         </div>
 
-        {/* COMPLETED SKILLS */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">
-            🛠️ Your Completed Skills
-          </h2>
+        {/* DYNAMIC VERIFIED SKILLS */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-2xl font-bold text-slate-900">
+              🛠️ Technical Skills for {careerGoal}
+            </h2>
 
-          <p className="text-slate-600 mb-6">
-            These skills were completed through your CareerPath AI learning
-            journey.
+            <span className="text-xs font-bold px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full">
+              {completedSkills.length > 0 ? 'Roadmap Validated' : 'Curated Track'}
+            </span>
+          </div>
+
+          <p className="text-slate-600 mb-6 text-sm">
+            {completedSkills.length > 0
+              ? 'These skills were validated through your active CareerPath AI learning journey.'
+              : `Recommended core skills curated for your ${careerGoal} career track.`}
           </p>
 
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
             {skills.map((skill) => (
               <div
                 key={skill}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl bg-green-50 border border-green-200"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-sm"
               >
-                <span className="text-green-600 font-bold">
+                <span className="text-emerald-600 font-bold">
                   ✓
                 </span>
 
-                <span className="font-medium text-slate-800">
+                <span className="font-semibold text-slate-800">
                   {skill}
                 </span>
               </div>
@@ -232,74 +263,80 @@ function ResumeBuilder({ studentData, completedSkills = [] }) {
         </div>
 
         {/* PROFESSIONAL SUMMARY */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">
-            📝 Professional Summary
-          </h2>
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-2xl font-bold text-slate-900">
+              📝 Professional Summary
+            </h2>
+
+            <button
+              type="button"
+              onClick={() => setSummary(defaultSummary)}
+              className="text-xs text-indigo-600 font-semibold hover:underline"
+            >
+              Reset to Recommended
+            </button>
+          </div>
 
           <p className="text-slate-500 text-sm mb-4">
-            CareerPath AI generated this summary based on your profile.
+            Customized based on your branch ({branch}), year ({year}), and career aspiration ({careerGoal}).
           </p>
 
           <textarea
-            rows="6"
+            rows="4"
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+            className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none text-slate-800 leading-relaxed text-sm"
           />
         </div>
 
         {/* PROJECTS */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 shadow-sm">
           <h2 className="text-2xl font-bold text-slate-900 mb-5">
-            🚀 Projects
+            🚀 Capstone Project
           </h2>
 
           <div className="rounded-xl bg-indigo-50 border border-indigo-200 p-5">
-            <h3 className="text-xl font-bold text-indigo-900 mb-2">
-              CareerPath AI
+            <h3 className="text-xl font-bold text-indigo-950 mb-2">
+              CareerPath AI — Smart Career & Skill Acceleration Platform
             </h3>
 
-            <p className="text-slate-700 leading-relaxed">
-              CareerPath AI is an AI-powered student career guidance
-              platform that analyzes student profiles, identifies skill
-              gaps, recommends suitable career paths, provides a
-              personalized learning roadmap, tracks skill completion,
-              and helps students build professional resumes.
+            <p className="text-slate-700 leading-relaxed text-sm">
+              Architected and developed CareerPath AI, an intelligent student career guidance system that analyzes multi-factor engineering profiles, identifies domain skill gaps against live industry competency matrices, provides tailored learning roadmaps, tracks milestones, and generates ATS-optimized resumes.
             </p>
           </div>
         </div>
 
         {/* CERTIFICATIONS */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 shadow-sm">
           <h2 className="text-2xl font-bold text-slate-900 mb-2">
             🏆 Certifications & Achievements
           </h2>
 
           <p className="text-slate-500 text-sm mb-4">
-            Add certifications, hackathons, awards, workshops, etc.
+            Add any certifications, hackathons, awards, workshops, or academic honors.
           </p>
 
           <textarea
-            rows="4"
+            rows="3"
             value={certifications}
             onChange={(e) => setCertifications(e.target.value)}
-            placeholder="Example: AI Workshop, Hackathon 2026, Python Certification..."
-            className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+            placeholder="e.g. AWS Certified Cloud Practitioner, Hackathon Finalist, Python for Data Science (Coursera)..."
+            className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none text-sm"
           />
         </div>
 
         {/* PROFESSIONAL LINKS */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 shadow-sm">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">
-            🔗 Professional Links
+            🔗 Professional Profiles
           </h2>
 
           <div className="grid md:grid-cols-2 gap-5">
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                GitHub
+                GitHub Profile URL
               </label>
 
               <input
@@ -312,7 +349,7 @@ function ResumeBuilder({ studentData, completedSkills = [] }) {
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                LinkedIn
+                LinkedIn Profile URL
               </label>
 
               <input
@@ -331,9 +368,9 @@ function ResumeBuilder({ studentData, completedSkills = [] }) {
           <button
             type="button"
             onClick={handleGenerateResume}
-            className="px-8 py-4 rounded-xl bg-indigo-600 text-white font-bold text-lg hover:bg-indigo-700 transition shadow-lg"
+            className="px-8 py-4 rounded-xl bg-indigo-600 text-white font-bold text-lg hover:bg-indigo-700 transition shadow-lg inline-flex items-center gap-2"
           >
-            Generate My Resume →
+            Generate My Resume Preview →
           </button>
         </div>
 
@@ -350,16 +387,16 @@ function ResumeBuilder({ studentData, completedSkills = [] }) {
                 {name}
               </h1>
 
-              <p className="text-slate-600 mt-2">
-                {email} | {phone} | {location}
+              <p className="text-slate-600 mt-2 font-medium">
+                {email} • {phone} • {location}
               </p>
 
               <div className="flex flex-wrap gap-4 mt-3 text-sm">
-                <span className="text-indigo-600">
+                <span className="text-indigo-600 font-medium">
                   GitHub: {github}
                 </span>
 
-                <span className="text-indigo-600">
+                <span className="text-indigo-600 font-medium">
                   LinkedIn: {linkedin}
                 </span>
               </div>
@@ -382,16 +419,16 @@ function ResumeBuilder({ studentData, completedSkills = [] }) {
                 Education
               </h2>
 
-              <h3 className="font-bold text-slate-900">
-                Vignan University
+              <h3 className="font-bold text-slate-900 text-lg">
+                {university}
               </h3>
 
               <p className="text-slate-700">
-                {branch}
+                Bachelor of Technology in {branch}
               </p>
 
               <p className="text-slate-700 mt-1">
-                Year: {year} | CGPA: {cgpa}
+                Year: {year} | CGPA: {cgpa || 'N/A'}
               </p>
             </section>
 
@@ -405,7 +442,7 @@ function ResumeBuilder({ studentData, completedSkills = [] }) {
                 {skills.map((skill) => (
                   <span
                     key={skill}
-                    className="px-3 py-2 rounded-lg bg-slate-100 text-slate-800 font-medium"
+                    className="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-800 font-medium text-sm border border-slate-200"
                   >
                     {skill}
                   </span>
@@ -420,15 +457,11 @@ function ResumeBuilder({ studentData, completedSkills = [] }) {
               </h2>
 
               <h3 className="font-bold text-slate-900">
-                CareerPath AI
+                CareerPath AI — Smart Career & Skill Acceleration Platform
               </h3>
 
               <p className="text-slate-700 leading-relaxed mt-2">
-                AI-powered student career guidance platform that
-                analyzes student profiles, identifies skill gaps,
-                recommends suitable career paths, provides a
-                personalized learning roadmap, tracks skill completion,
-                and helps students build professional resumes.
+                Architected and developed CareerPath AI, an intelligent student career guidance system that analyzes multi-factor engineering profiles, identifies domain skill gaps against live industry competency matrices, provides tailored learning roadmaps, tracks milestones, and generates ATS-optimized resumes.
               </p>
             </section>
 
@@ -448,15 +481,15 @@ function ResumeBuilder({ studentData, completedSkills = [] }) {
             {/* Career Interest */}
             <section className="mb-7">
               <h2 className="text-xl font-bold text-slate-900 border-b border-slate-300 pb-2 mb-3">
-                Career Interest
+                Target Specialization
               </h2>
 
-              <p className="text-slate-700">
-                Artificial Intelligence & Machine Learning
+              <p className="text-slate-800 font-semibold">
+                {careerGoal}
               </p>
 
               <p className="text-slate-500 text-sm mt-1">
-                Interest: {interest}
+                Focus Areas: {interest}
               </p>
             </section>
 
@@ -465,7 +498,7 @@ function ResumeBuilder({ studentData, completedSkills = [] }) {
               <button
                 type="button"
                 onClick={handlePrint}
-                className="px-8 py-4 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition"
+                className="px-8 py-4 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition shadow-md"
               >
                 🖨️ Print / Save as PDF
               </button>

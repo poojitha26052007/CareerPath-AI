@@ -1,95 +1,43 @@
-import { useState } from 'react'
-
-function LearningJourney({ onComplete, onBack }) {
-  const [completedSkills, setCompletedSkills] = useState([])
-
-  const skills = [
-    {
-      id: 1,
-      name: 'Python Fundamentals',
-      icon: '🐍',
-      description:
-        'Learn Python basics, variables, loops, functions and problem solving.',
-      duration: '3 weeks',
-    },
-    {
-      id: 2,
-      name: 'SQL',
-      icon: '🗄️',
-      description:
-        'Learn databases, SQL queries, filtering, joins and data management.',
-      duration: '2 weeks',
-    },
-    {
-      id: 3,
-      name: 'Git & GitHub',
-      icon: '🔧',
-      description:
-        'Learn version control and how to manage your projects with GitHub.',
-      duration: '1 week',
-    },
-    {
-      id: 4,
-      name: 'NumPy',
-      icon: '🔢',
-      description:
-        'Learn numerical computing and arrays for data science.',
-      duration: '1 week',
-    },
-    {
-      id: 5,
-      name: 'Pandas',
-      icon: '🐼',
-      description:
-        'Learn data manipulation, cleaning and analysis using Pandas.',
-      duration: '2 weeks',
-    },
-    {
-      id: 6,
-      name: 'Statistics',
-      icon: '📊',
-      description:
-        'Learn probability, statistics and concepts needed for AI and data science.',
-      duration: '3 weeks',
-    },
-    {
-      id: 7,
-      name: 'Machine Learning',
-      icon: '🤖',
-      description:
-        'Learn supervised learning, unsupervised learning and model evaluation.',
-      duration: '4 weeks',
-    },
-    {
-      id: 8,
-      name: 'AI Project',
-      icon: '🚀',
-      description:
-        'Build a real-world AI project and add it to your portfolio.',
-      duration: '4 weeks',
-    },
-  ]
-
-  const toggleSkill = (skillId) => {
-    setCompletedSkills((previousSkills) => {
-      if (previousSkills.includes(skillId)) {
-        return previousSkills.filter((id) => id !== skillId)
-      }
-
-      return [...previousSkills, skillId]
-    })
+function LearningJourney({
+  studentData = {},
+  careerEvaluation = null,
+  completedSkills = [],
+  onToggleSkill,
+  onComplete,
+  onBack,
+}) {
+  const primary = careerEvaluation?.primary || {
+    title: studentData?.careerGoal || 'Software Developer',
+    icon: '💻',
+    roadmap: [],
   }
 
-  const progress = Math.round(
-    (completedSkills.length / skills.length) * 100
+  const skills = (primary.roadmap && primary.roadmap.length > 0)
+    ? primary.roadmap
+    : [
+        { id: 1, name: 'Core Programming', icon: '💻', duration: '3 weeks', description: 'Core programming logic and problem solving.' },
+        { id: 2, name: 'Data Structures', icon: '⚡', duration: '4 weeks', description: 'Arrays, Lists, Trees, and Algorithms.' },
+        { id: 3, name: 'Databases & SQL', icon: '🗄️', duration: '2 weeks', description: 'Database design and querying.' },
+        { id: 4, name: 'Git & GitHub', icon: '🔧', duration: '1 week', description: 'Version control and collaboration.' },
+        { id: 5, name: 'API Development', icon: '📐', duration: '3 weeks', description: 'REST APIs and client-server architecture.' },
+        { id: 6, name: 'System Architecture', icon: '🏗️', duration: '2 weeks', description: 'Scalability and clean code.' },
+        { id: 7, name: 'Testing & QA', icon: '🧪', duration: '2 weeks', description: 'Unit testing and debugging.' },
+        { id: 8, name: 'Capstone Project', icon: '🚀', duration: '4 weeks', description: 'Production-ready software project.' },
+      ]
+
+  const activeCompletedSkills = skills.filter((skill) =>
+    completedSkills.includes(skill.name)
+  )
+  const completedCount = Math.min(activeCompletedSkills.length, skills.length)
+  const progress = Math.min(
+    100,
+    Math.round((completedCount / skills.length) * 100)
   )
 
-  const handleResume = () => {
-    const completedSkillNames = skills
-      .filter((skill) => completedSkills.includes(skill.id))
-      .map((skill) => skill.name)
-
-    onComplete(completedSkillNames)
+  const handleToggle = (skillName) => {
+    if (onToggleSkill) {
+      onToggleSkill(skillName)
+    }
   }
 
   return (
@@ -110,15 +58,18 @@ function LearningJourney({ onComplete, onBack }) {
         <div className="mb-8">
 
           <p className="text-indigo-600 font-semibold mb-2">
-            Step 3 of 3
+            Step 3 of 3 • Practical Skill Roadmap
           </p>
 
-          <h1 className="text-4xl sm:text-5xl font-bold text-slate-900">
-            Your Learning Journey 📚
-          </h1>
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">{primary.icon || '📚'}</span>
+            <h1 className="text-4xl sm:text-5xl font-bold text-slate-900">
+              {primary.title} Learning Journey
+            </h1>
+          </div>
 
-          <p className="text-slate-600 mt-3">
-            Learn the recommended skills step by step and track your progress.
+          <p className="text-slate-600 mt-3 text-lg">
+            Complete the curated skills step by step. Toggling items updates your live match score and resume in real-time.
           </p>
 
         </div>
@@ -130,11 +81,11 @@ function LearningJourney({ onComplete, onBack }) {
 
             <div>
               <h2 className="text-xl font-bold text-slate-900">
-                Overall Progress
+                Roadmap Completion Progress
               </h2>
 
               <p className="text-slate-500 text-sm mt-1">
-                {completedSkills.length} of {skills.length} skills completed
+                {completedCount} of {skills.length} skills completed for {primary.title}
               </p>
             </div>
 
@@ -157,20 +108,19 @@ function LearningJourney({ onComplete, onBack }) {
 
         </div>
 
-        {/* Skills */}
-        <div className="space-y-5">
+        {/* Skills List */}
+        <div className="space-y-4">
 
           {skills.map((skill, index) => {
-
-            const completed = completedSkills.includes(skill.id)
+            const completed = completedSkills.includes(skill.name)
 
             return (
               <div
-                key={skill.id}
-                className={`rounded-2xl border p-6 transition ${
+                key={skill.id || skill.name}
+                className={`rounded-2xl border p-6 transition-all ${
                   completed
-                    ? 'border-green-300 bg-green-50'
-                    : 'border-slate-200 bg-white'
+                    ? 'border-emerald-300 bg-emerald-50/70 shadow-sm'
+                    : 'border-slate-200 bg-white hover:border-indigo-200 shadow-sm'
                 }`}
               >
 
@@ -180,9 +130,9 @@ function LearningJourney({ onComplete, onBack }) {
                   <div className="flex items-center gap-4">
 
                     <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center font-bold ${
+                      className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
                         completed
-                          ? 'bg-green-600 text-white'
+                          ? 'bg-emerald-600 text-white'
                           : 'bg-indigo-100 text-indigo-700'
                       }`}
                     >
@@ -190,7 +140,7 @@ function LearningJourney({ onComplete, onBack }) {
                     </div>
 
                     <div className="text-4xl">
-                      {skill.icon}
+                      {skill.icon || '📌'}
                     </div>
 
                   </div>
@@ -204,37 +154,41 @@ function LearningJourney({ onComplete, onBack }) {
                         {skill.name}
                       </h3>
 
-                      {completed && (
-                        <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
-                          Completed
+                      {completed ? (
+                        <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">
+                          ✓ Completed
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-0.5 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">
+                          Month {index + 1}
                         </span>
                       )}
 
                     </div>
 
-                    <p className="text-slate-600 mt-2">
+                    <p className="text-slate-600 mt-2 text-sm leading-relaxed">
                       {skill.description}
                     </p>
 
-                    <p className="text-sm text-indigo-600 font-medium mt-2">
-                      ⏱ Estimated time: {skill.duration}
-                    </p>
+                    {skill.duration && (
+                      <p className="text-xs text-indigo-600 font-medium mt-2">
+                        ⏱ Estimated time: {skill.duration}
+                      </p>
+                    )}
 
                   </div>
 
                   {/* Button */}
                   <button
                     type="button"
-                    onClick={() => toggleSkill(skill.id)}
-                    className={`px-5 py-3 rounded-xl font-semibold transition whitespace-nowrap ${
+                    onClick={() => handleToggle(skill.name)}
+                    className={`px-5 py-3 rounded-xl font-semibold transition whitespace-nowrap text-sm ${
                       completed
-                        ? 'bg-green-600 text-white hover:bg-green-700'
+                        ? 'bg-emerald-600 text-white hover:bg-emerald-700'
                         : 'bg-indigo-600 text-white hover:bg-indigo-700'
                     }`}
                   >
-                    {completed
-                      ? '✓ Completed'
-                      : 'Mark as Completed'}
+                    {completed ? '✓ Completed' : 'Mark as Completed'}
                   </button>
 
                 </div>
@@ -245,28 +199,28 @@ function LearningJourney({ onComplete, onBack }) {
 
         </div>
 
-        {/* Congratulations */}
+        {/* Completion Celebration Card */}
         {progress === 100 && (
-          <div className="mt-8 bg-green-50 border border-green-200 rounded-2xl p-8 text-center">
+          <div className="mt-8 bg-emerald-50 border border-emerald-200 rounded-2xl p-8 text-center shadow-md">
 
             <div className="text-5xl mb-4">
               🎉
             </div>
 
-            <h2 className="text-2xl font-bold text-green-800">
-              Congratulations!
+            <h2 className="text-2xl font-bold text-emerald-900">
+              Outstanding Achievement!
             </h2>
 
-            <p className="text-green-700 mt-2">
-              You have completed your recommended learning journey.
+            <p className="text-emerald-700 mt-2 max-w-xl mx-auto">
+              You have completed all 8 recommended skills in your {primary.title} learning roadmap! You are now industry ready.
             </p>
 
             <button
               type="button"
-              onClick={handleResume}
-              className="mt-6 px-8 py-4 rounded-xl bg-green-600 text-white font-semibold hover:bg-green-700 transition"
+              onClick={onComplete}
+              className="mt-6 px-8 py-4 rounded-xl bg-emerald-600 text-white font-bold text-lg hover:bg-emerald-700 transition shadow-lg inline-flex items-center gap-2"
             >
-              Build My Resume →
+              Build & Download My Resume →
             </button>
 
           </div>

@@ -1,14 +1,14 @@
 import { useState } from 'react'
 
-function StudentProfile({ onComplete }) {
+function StudentProfile({ initialData = {}, onComplete }) {
   const [formData, setFormData] = useState({
-    name: '',
-    branch: '',
-    year: '',
-    cgpa: '',
-    skills: '',
-    interests: '',
-    careerGoal: '',
+    name: initialData.name || '',
+    branch: initialData.branch || '',
+    year: initialData.year || '',
+    cgpa: initialData.cgpa || '',
+    skills: initialData.skills || '',
+    interests: initialData.interests || '',
+    careerGoal: initialData.careerGoal || '',
   })
 
   const handleChange = (e) => {

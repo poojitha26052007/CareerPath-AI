@@ -1,59 +1,144 @@
 function Dashboard({
   studentData = {},
   completedSkills = [],
-  onCareerAnalysis,
-  onLearningJourney,
-  onResume,
+  careerEvaluation = null,
+  onNavigate,
+  onEditProfile,
 }) {
-  const name = studentData?.name || 'Student'
-  const branch = studentData?.branch || 'AIML'
-  const year = studentData?.year || '2'
-  const cgpa = studentData?.cgpa || 'N/A'
+  // =========================
+  // NAVIGATION HANDLERS
+  // =========================
+
+  const onCareerAnalysis = () => {
+    onNavigate?.('careerAnalysis')
+  }
+
+  const onLearningJourney = () => {
+    onNavigate?.('learningJourney')
+  }
+
+  const onResume = () => {
+    onNavigate?.('resumeBuilder')
+  }
+
+  // =========================
+  // STUDENT DATA
+  // =========================
+
+  const name =
+    studentData?.name ||
+    studentData?.fullName ||
+    'Student'
+
+  const branch =
+    studentData?.branch || 'CSE'
+
+  const year =
+    studentData?.year ||
+    studentData?.currentYear ||
+    '2'
+
+  const cgpa =
+    studentData?.cgpa || 'N/A'
 
   const interest =
     studentData?.interests ||
     studentData?.interest ||
-    'AI'
+    'Technology'
+
+  // =========================
+  // PRIMARY CAREER
+  // =========================
+
+  const primaryCareer =
+    careerEvaluation?.primary || {
+      title:
+        studentData?.careerGoal ||
+        'Software Developer',
+
+      icon: '🎯',
+
+      matchPercentage: 0,
+
+      scoreBreakdown: {
+        skillScore: 0,
+        academicScore: 0,
+        interestScore: 0,
+        projectScore: 0,
+      },
+
+      roadmap: [],
+    }
 
   const careerGoal =
-    studentData?.careerGoal &&
-    studentData.careerGoal !== "I don't know yet" &&
-    studentData.careerGoal !== 'Not Sure'
-      ? studentData.careerGoal
-      : 'AI / ML Engineer'
+    primaryCareer.title
 
-  const totalSkills = 8
+  const matchPercentage =
+    primaryCareer.matchPercentage
 
-  const completedCount = Array.isArray(completedSkills)
-    ? completedSkills.length
-    : 0
+  const roadmapSkills =
+    (primaryCareer.roadmap || [])
+      .map((item) => item.name)
 
-  const remainingSkills = totalSkills - completedCount
+  const totalSkills =
+    roadmapSkills.length > 0
+      ? roadmapSkills.length
+      : 8
 
-  const progress = Math.round(
-    (completedCount / totalSkills) * 100
+  // =========================
+  // COMPLETED SKILLS
+  // =========================
+
+  const validCompletedSkills =
+    roadmapSkills.filter(
+      (skillName) =>
+        Array.isArray(completedSkills) &&
+        completedSkills.includes(skillName)
+    )
+
+  const completedCount =
+    Math.min(
+      validCompletedSkills.length,
+      totalSkills
+    )
+
+  const remainingSkills =
+    Math.max(
+      0,
+      totalSkills - completedCount
+    )
+
+  // =========================
+  // LEARNING PROGRESS
+  // =========================
+
+  const progress = Math.min(
+    100,
+    Math.round(
+      (completedCount / totalSkills) * 100
+    )
   )
 
-  const skills = [
-    'Python Fundamentals',
-    'SQL',
-    'Git & GitHub',
-    'NumPy',
-    'Pandas',
-    'Statistics',
-    'Machine Learning',
-    'AI Project',
-  ]
-
   const currentLearning =
-    skills.find(
-      (skill) => !completedSkills.includes(skill)
-    ) || 'AI Project'
+    roadmapSkills.find(
+      (skill) =>
+        !validCompletedSkills.includes(skill)
+    ) ||
+    roadmapSkills[
+    roadmapSkills.length - 1
+    ] ||
+    'Capstone Project'
+
+  // =========================
+  // FORMAT HELPERS
+  // =========================
 
   const formatBranch = (value) => {
     if (
-      value === 'Computer Science & Engineering' ||
-      value === 'Computer Science'
+      value ===
+      'Computer Science & Engineering' ||
+      value ===
+      'Computer Science'
     ) {
       return 'CSE'
     }
@@ -62,15 +147,100 @@ function Dashboard({
   }
 
   const formatInterest = (value) => {
-    return String(value)
-      .replace(/\b\w/g, (char) => char.toUpperCase())
+    if (!value) {
+      return 'Technology'
+    }
+
+    let str =
+      String(value).trim()
+
+    // Handle doubled strings
+    if (
+      str.length >= 4 &&
+      str.length % 2 === 0
+    ) {
+      const half =
+        str.slice(
+          0,
+          str.length / 2
+        )
+
+      if (half + half === str) {
+        str = half
+      }
+    }
+
+    const parts =
+      str
+        .split(/[,;\n/]+/)
+        .map(
+          (item) =>
+            item.trim()
+        )
+        .filter(Boolean)
+
+    if (parts.length === 0) {
+      return 'Technology'
+    }
+
+    const unique = []
+    const seen = new Set()
+
+    for (let part of parts) {
+      if (
+        part.length >= 4 &&
+        part.length % 2 === 0
+      ) {
+        const half =
+          part.slice(
+            0,
+            part.length / 2
+          )
+
+        if (half + half === part) {
+          part = half
+        }
+      }
+
+      const formatted =
+        part.replace(
+          /\b\w/g,
+          (c) => c.toUpperCase()
+        )
+
+      const lower =
+        formatted.toLowerCase()
+
+      if (!seen.has(lower)) {
+        seen.add(lower)
+        unique.push(formatted)
+      }
+    }
+
+    return unique.join(', ')
   }
+
+  // =========================
+  // SCORE BREAKDOWN
+  // =========================
+
+  const breakdown =
+    primaryCareer.scoreBreakdown || {
+      skillScore: 0,
+      academicScore: 0,
+      interestScore: 0,
+      projectScore: 0,
+    }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
 
-      {/* HEADER */}
+      {/* =========================
+          HEADER
+      ========================= */}
+
       <header className="bg-white border-b border-slate-200">
+
         <div className="max-w-6xl mx-auto px-5 py-5 flex items-center justify-between">
 
           <div>
@@ -83,21 +253,42 @@ function Dashboard({
             </p>
           </div>
 
-          <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center font-bold text-indigo-700">
-            {name
-              .split(' ')
-              .map((word) => word[0])
-              .join('')
-              .slice(0, 2)
-              .toUpperCase()}
+          <div className="flex items-center gap-3">
+
+            {onEditProfile && (
+              <button
+                type="button"
+                onClick={onEditProfile}
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 transition"
+              >
+                ✏️ Edit Profile
+              </button>
+            )}
+
+            <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center font-bold text-indigo-700">
+              {name
+                .split(' ')
+                .map(
+                  (word) =>
+                    word[0]
+                )
+                .join('')
+                .slice(0, 2)
+                .toUpperCase()}
+            </div>
+
           </div>
 
         </div>
+
       </header>
 
       <main className="max-w-6xl mx-auto px-5 py-8">
 
-        {/* WELCOME */}
+        {/* =========================
+            WELCOME
+        ========================= */}
+
         <section className="mb-8">
 
           <h2 className="text-3xl font-bold">
@@ -105,41 +296,89 @@ function Dashboard({
           </h2>
 
           <p className="text-slate-500 mt-2">
-            Continue your journey toward becoming industry ready.
+            Continue your journey toward becoming industry ready for{' '}
+            <span className="font-semibold text-slate-800">
+              {careerGoal}
+            </span>.
           </p>
 
         </section>
 
-        {/* CAREER GOAL */}
-        <section className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl p-7 mb-6">
+        {/* =========================
+            CAREER GOAL CARD
+        ========================= */}
 
-          <p className="text-indigo-100 text-sm uppercase font-semibold">
-            Your Career Goal
-          </p>
+        <section className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl p-7 mb-6 shadow-sm">
+
+          <div className="flex items-center justify-between mb-2">
+
+            <p className="text-indigo-100 text-sm uppercase font-semibold">
+              Your Target Career Goal
+            </p>
+
+            <span className="text-2xl">
+              {primaryCareer.icon || '🎯'}
+            </span>
+
+          </div>
 
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
 
             <div>
 
-              <h3 className="text-3xl font-bold mt-2">
+              <h3 className="text-3xl font-bold mt-1">
                 {careerGoal}
               </h3>
 
-              <p className="text-indigo-100 mt-2">
-                Your top recommended career path based on your profile.
+              <p className="text-indigo-100 mt-2 max-w-xl">
+                {primaryCareer.description ||
+                  'Your top recommended career path based on your real skills, branch, and interests.'}
               </p>
+
+              <div className="flex flex-wrap items-center gap-2 mt-4 text-xs font-medium">
+
+                <span className="text-indigo-200">
+                  Calculated based on:
+                </span>
+
+                <span className="px-2.5 py-1 rounded-full bg-white/20 text-white">
+                  ✓ Skills ({breakdown.skillScore}/60)
+                </span>
+
+                <span className="px-2.5 py-1 rounded-full bg-white/20 text-white">
+                  ✓ Branch ({breakdown.academicScore}/15)
+                </span>
+
+                <span className="px-2.5 py-1 rounded-full bg-white/20 text-white">
+                  ✓ Interests ({breakdown.interestScore}/15)
+                </span>
+
+                <span className="px-2.5 py-1 rounded-full bg-white/20 text-white">
+                  ✓ Projects ({breakdown.projectScore}/10)
+                </span>
+
+              </div>
 
             </div>
 
-            <div className="bg-white/15 rounded-2xl px-7 py-5 text-center">
+            <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-7 py-5 text-center min-w-[140px] border border-white/10">
 
               <div className="text-4xl font-bold">
-                82%
+                {matchPercentage}%
               </div>
 
-              <div className="text-sm text-indigo-100">
-                Match
+              <div className="text-sm text-indigo-100 mt-0.5">
+                Career Match
               </div>
+
+              {/* NAVIGATION */}
+              <button
+                type="button"
+                onClick={onCareerAnalysis}
+                className="mt-3 text-xs bg-white text-indigo-700 font-bold px-3 py-1.5 rounded-lg hover:bg-indigo-50 transition w-full"
+              >
+                View Analysis →
+              </button>
 
             </div>
 
@@ -147,32 +386,45 @@ function Dashboard({
 
         </section>
 
-        {/* STATS */}
+        {/* =========================
+            STATS
+        ========================= */}
+
         <section className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
 
           {/* Career Match */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6">
 
-            <div className="text-3xl">
-              🎯
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+
+            <div className="flex justify-between items-start">
+
+              <div className="text-3xl">
+                🎯
+              </div>
+
+              <span className="text-xs font-semibold px-2 py-1 rounded-md bg-indigo-50 text-indigo-700">
+                Dynamic Score
+              </span>
+
             </div>
 
             <p className="text-sm text-slate-500 mt-4">
               Career Match
             </p>
 
-            <h3 className="text-2xl font-bold mt-1">
-              82%
+            <h3 className="text-2xl font-bold mt-1 text-slate-900">
+              {matchPercentage}%
             </h3>
 
-            <p className="text-sm text-slate-600 mt-1">
+            <p className="text-sm text-slate-600 mt-1 truncate">
               {careerGoal}
             </p>
 
           </div>
 
           {/* Skills */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6">
+
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
 
             <div className="text-3xl">
               📚
@@ -182,20 +434,21 @@ function Dashboard({
               Skills Completed
             </p>
 
-            <h3 className="text-2xl font-bold mt-1">
+            <h3 className="text-2xl font-bold mt-1 text-slate-900">
               {completedCount} / {totalSkills}
             </h3>
 
             <p className="text-sm text-slate-600 mt-1">
               {remainingSkills === 0
-                ? 'All skills completed!'
+                ? 'All roadmap skills completed!'
                 : `${remainingSkills} skills remaining`}
             </p>
 
           </div>
 
           {/* Progress */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6">
+
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
 
             <div className="text-3xl">
               🚀
@@ -205,36 +458,41 @@ function Dashboard({
               Learning Progress
             </p>
 
-            <h3 className="text-2xl font-bold mt-1">
+            <h3 className="text-2xl font-bold mt-1 text-slate-900">
               {progress}%
             </h3>
 
             <p className="text-sm text-slate-600 mt-1">
               {progress === 100
-                ? 'Career ready!'
-                : 'Keep going!'}
+                ? 'Ready for industry placement!'
+                : 'Keep making steady progress!'}
             </p>
 
           </div>
 
         </section>
 
-        {/* OVERALL PROGRESS */}
-        <section className="bg-white border border-slate-200 rounded-2xl p-6 mb-8">
+        {/* =========================
+            OVERALL PROGRESS
+        ========================= */}
 
-          <div className="flex justify-between mb-3">
+        <section className="bg-white border border-slate-200 rounded-2xl p-6 mb-8 shadow-sm">
+
+          <div className="flex justify-between items-center mb-3">
 
             <div>
+
               <h3 className="text-xl font-bold">
                 Overall Learning Progress
               </h3>
 
               <p className="text-sm text-slate-500 mt-1">
-                {completedCount} of {totalSkills} skills completed
+                {completedCount} of {totalSkills} roadmap skills completed for {careerGoal}
               </p>
+
             </div>
 
-            <span className="text-indigo-600 font-bold">
+            <span className="text-indigo-600 font-bold text-lg">
               {progress}%
             </span>
 
@@ -253,15 +511,18 @@ function Dashboard({
 
         </section>
 
-        {/* CURRENT LEARNING */}
-        <section className="bg-white border border-slate-200 rounded-2xl p-6 mb-8">
+        {/* =========================
+            CURRENT LEARNING
+        ========================= */}
+
+        <section className="bg-white border border-slate-200 rounded-2xl p-6 mb-8 shadow-sm">
 
           <div className="flex justify-between items-center">
 
             <div>
 
               <p className="text-sm text-indigo-600 font-semibold uppercase">
-                Current Learning
+                Current Learning Focus
               </p>
 
               <h3 className="text-2xl font-bold mt-1">
@@ -276,28 +537,31 @@ function Dashboard({
 
           </div>
 
-          <div className="bg-slate-50 rounded-xl p-5 mt-6">
+          <div className="bg-slate-50 rounded-xl p-5 mt-6 border border-slate-200/60">
 
-            <h4 className="text-xl font-bold">
+            <h4 className="text-xl font-bold text-slate-900">
               {currentLearning}
             </h4>
 
             <p className="text-slate-600 mt-2">
-              Complete your {currentLearning} skills and move one
-              step closer to your career goal.
+              Complete your {currentLearning} skills to raise your match score and move closer to your career goal.
             </p>
 
             <div className="mt-5">
 
               <div className="flex justify-between text-sm mb-2">
-                <span>Progress</span>
 
-                <span className="font-semibold">
+                <span>
+                  Journey Progress
+                </span>
+
+                <span className="font-semibold text-indigo-600">
                   {progress}%
                 </span>
+
               </div>
 
-              <div className="w-full h-2 bg-slate-200 rounded-full">
+              <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
 
                 <div
                   className="h-full bg-indigo-600 rounded-full transition-all"
@@ -310,18 +574,23 @@ function Dashboard({
 
             </div>
 
+            {/* NAVIGATION */}
             <button
+              type="button"
               onClick={onLearningJourney}
-              className="mt-5 px-5 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
+              className="mt-5 px-5 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition inline-flex items-center gap-2"
             >
-              Continue →
+              Continue Learning Roadmap →
             </button>
 
           </div>
 
         </section>
 
-        {/* QUICK ACTIONS */}
+        {/* =========================
+            QUICK ACTIONS
+        ========================= */}
+
         <section className="mb-8">
 
           <h3 className="text-xl font-bold mb-5">
@@ -331,74 +600,92 @@ function Dashboard({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
             {/* Career Analysis */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6">
 
-              <div className="text-3xl">
-                🎯
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+
+              <div>
+
+                <div className="text-3xl">
+                  🎯
+                </div>
+
+                <h4 className="text-xl font-bold mt-4">
+                  Career Analysis
+                </h4>
+
+                <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+                  Explore your dynamic match breakdown, identified skill gaps, and alternative career pathways.
+                </p>
+
               </div>
 
-              <h4 className="text-xl font-bold mt-4">
-                Career Analysis
-              </h4>
-
-              <p className="text-sm text-slate-500 mt-2">
-                Explore your recommended career paths, match scores
-                and required skills.
-              </p>
-
+              {/* NAVIGATION */}
               <button
+                type="button"
                 onClick={onCareerAnalysis}
-                className="mt-5 text-indigo-600 font-semibold"
+                className="mt-5 text-indigo-600 font-semibold text-left inline-flex items-center gap-1 hover:text-indigo-800"
               >
-                Explore →
+                Explore Analysis →
               </button>
 
             </div>
 
             {/* Learning */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6">
 
-              <div className="text-3xl">
-                📚
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+
+              <div>
+
+                <div className="text-3xl">
+                  📚
+                </div>
+
+                <h4 className="text-xl font-bold mt-4">
+                  Learning Journey
+                </h4>
+
+                <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+                  Follow your step-by-step roadmap specifically curated for {careerGoal}.
+                </p>
+
               </div>
 
-              <h4 className="text-xl font-bold mt-4">
-                Learning Journey
-              </h4>
-
-              <p className="text-sm text-slate-500 mt-2">
-                Follow your personalized roadmap and complete
-                important skills.
-              </p>
-
+              {/* NAVIGATION */}
               <button
+                type="button"
                 onClick={onLearningJourney}
-                className="mt-5 text-indigo-600 font-semibold"
+                className="mt-5 text-indigo-600 font-semibold text-left inline-flex items-center gap-1 hover:text-indigo-800"
               >
-                Continue →
+                Open Roadmap →
               </button>
 
             </div>
 
             {/* Resume */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6">
 
-              <div className="text-3xl">
-                📄
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+
+              <div>
+
+                <div className="text-3xl">
+                  📄
+                </div>
+
+                <h4 className="text-xl font-bold mt-4">
+                  Build Resume
+                </h4>
+
+                <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+                  Generate a polished professional resume featuring your validated skills and project.
+                </p>
+
               </div>
 
-              <h4 className="text-xl font-bold mt-4">
-                Build Resume
-              </h4>
-
-              <p className="text-sm text-slate-500 mt-2">
-                Create a professional resume using your completed
-                skills and projects.
-              </p>
-
+              {/* NAVIGATION */}
               <button
+                type="button"
                 onClick={onResume}
-                className="mt-5 text-indigo-600 font-semibold"
+                className="mt-5 text-indigo-600 font-semibold text-left inline-flex items-center gap-1 hover:text-indigo-800"
               >
                 View Resume →
               </button>
@@ -409,63 +696,130 @@ function Dashboard({
 
         </section>
 
-        {/* CAREER READY */}
-        <section className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 mb-8">
+        {/* =========================
+            CAREER READY / LEARNING
+        ========================= */}
 
-          <div className="flex gap-4">
+        {progress === 100 ? (
 
-            <div className="text-3xl">
-              🎉
+          <section className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 mb-8 shadow-sm">
+
+            <div className="flex gap-4">
+
+              <div className="text-3xl">
+                🎉
+              </div>
+
+              <div>
+
+                <p className="text-sm font-bold text-emerald-700 uppercase">
+                  Career Ready
+                </p>
+
+                <h3 className="text-xl font-bold mt-1 text-emerald-950">
+                  Congratulations! Your Resume is Ready
+                </h3>
+
+                <p className="text-sm text-slate-600 mt-2">
+                  You have completed all 8 recommended skills for {careerGoal}. Your achievements have been populated into your professional resume.
+                </p>
+
+                {/* NAVIGATION */}
+                <button
+                  type="button"
+                  onClick={onResume}
+                  className="mt-4 px-5 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition"
+                >
+                  View & Download Resume →
+                </button>
+
+              </div>
+
             </div>
 
-            <div>
+          </section>
 
-              <p className="text-sm font-bold text-emerald-700 uppercase">
-                Career Ready
-              </p>
+        ) : (
 
-              <h3 className="text-xl font-bold mt-1">
-                Your Resume is Ready
-              </h3>
+          <section className="bg-indigo-50 border border-indigo-200 rounded-2xl p-6 mb-8 shadow-sm">
 
-              <p className="text-sm text-slate-600 mt-2">
-                Your skills and CareerPath AI project have been
-                added to your professional resume.
-              </p>
+            <div className="flex gap-4">
 
+              <div className="text-3xl">
+                📈
+              </div>
+
+              <div>
+
+                <p className="text-sm font-bold text-indigo-700 uppercase">
+                  Learning In Progress
+                </p>
+
+                <h3 className="text-xl font-bold mt-1 text-slate-900">
+                  {completedCount} of {totalSkills} Skills Completed
+                </h3>
+
+                <p className="text-sm text-slate-600 mt-2">
+                  Complete remaining skills in your learning journey to unlock 100% Career Readiness and build an optimized resume.
+                </p>
+
+                {/* NAVIGATION */}
+                <button
+                  type="button"
+                  onClick={onLearningJourney}
+                  className="mt-4 px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition text-sm"
+                >
+                  Continue Learning →
+                </button>
+
+              </div>
+
+            </div>
+
+          </section>
+
+        )}
+
+        {/* =========================
+            PROFILE
+        ========================= */}
+
+        <section className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+
+          <div className="flex items-center justify-between mb-6">
+
+            <h3 className="text-xl font-bold">
+              Your Profile Overview
+            </h3>
+
+            {onEditProfile && (
               <button
-                onClick={onResume}
-                className="mt-4 px-5 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700"
+                type="button"
+                onClick={onEditProfile}
+                className="text-sm text-indigo-600 font-semibold hover:underline"
               >
-                View Resume →
+                Edit Details
               </button>
-
-            </div>
+            )}
 
           </div>
-
-        </section>
-
-        {/* PROFILE */}
-        <section className="bg-white border border-slate-200 rounded-2xl p-6">
-
-          <h3 className="text-xl font-bold mb-6">
-            Your Profile
-          </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
             <div>
+
               <p className="text-sm text-slate-500">
-                Name
+                Full Name
               </p>
 
               <p className="font-semibold mt-1">
                 {name}
               </p>
+
             </div>
 
             <div>
+
               <p className="text-sm text-slate-500">
                 Branch
               </p>
@@ -473,9 +827,11 @@ function Dashboard({
               <p className="font-semibold mt-1">
                 {formatBranch(branch)}
               </p>
+
             </div>
 
             <div>
+
               <p className="text-sm text-slate-500">
                 Year
               </p>
@@ -483,9 +839,11 @@ function Dashboard({
               <p className="font-semibold mt-1">
                 {year}
               </p>
+
             </div>
 
             <div>
+
               <p className="text-sm text-slate-500">
                 Interest
               </p>
@@ -493,9 +851,11 @@ function Dashboard({
               <p className="font-semibold mt-1">
                 {formatInterest(interest)}
               </p>
+
             </div>
 
             <div>
+
               <p className="text-sm text-slate-500">
                 CGPA
               </p>
@@ -503,6 +863,19 @@ function Dashboard({
               <p className="font-semibold mt-1">
                 {cgpa}
               </p>
+
+            </div>
+
+            <div>
+
+              <p className="text-sm text-slate-500">
+                Selected Goal
+              </p>
+
+              <p className="font-semibold mt-1 text-indigo-600">
+                {careerGoal}
+              </p>
+
             </div>
 
           </div>
@@ -511,10 +884,18 @@ function Dashboard({
 
       </main>
 
+      {/* =========================
+          FOOTER
+      ========================= */}
+
       <footer className="text-center py-8 text-sm text-slate-500">
+
         © 2026 CareerPath AI
+
         <br />
+
         Learn • Build • Grow 🚀
+
       </footer>
 
     </div>
